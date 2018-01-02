@@ -4,6 +4,12 @@
 3. Provides Declarative Security Programming(No need own logic code)
 4. Easy of Extendability
 
+### Architecture ###
+![](images/spring-security-architecture.png)
+
+Spring security combinations of pre and post servlet filter called `filterchain`. DelegatingFilterProxy just delegates request to `filterchain`. filterchain use two thing to process filter
+1. Authenticate Manager : it delegates request to `UserDetailsService` thats loads `UserDetails`
+2. Security Context : it contains `UserDetails` spring implemented class (`User`) .it use `GrandtedAuthorities` . spring implemented class (`Authorities`) object
 ### Spring Security on Spring Boot App ###
 
 Create App Boot App using spring boot cli
@@ -24,7 +30,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class HomeController {
 	
 	@GetMapping("/")
-	String index(@RequestParam(value="name", required=false, defaultValue="shamim") String name, Model model) {
+	String index(@RequestParam(value="name", required=false, defaultValue="shamim") 
+	String name, Model model) {
         model.addAttribute("name", name);
 		return "index";
 	}
