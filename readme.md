@@ -92,5 +92,9 @@ By default spring provide
 
 By above credential you can access your app
 
+https://data-flair.training/blogs/spring-security-tutorial/
+https://spring.io/guides/topicals/spring-security-architecture/
+https://howtodoinjava.com/spring-security/jdbc-user-service-based-spring-security-example/
+
 
 
