@@ -16,9 +16,8 @@ Spring security combinations of pre and post servlet filter called `filterchain`
  spring implemented class (`Authorities`) object
 ### Spring Security on Spring Boot App ###
 
-Create App Boot App using spring boot cli
-
-`spring init -n=SpringSecurity -g=com.javaaround --package-name=com.javaaround.security -d=Web,Security,JPA,Thymeleaf,MySql,DevTools --build=maven SpringSecurity`
+Create App Boot App using spring initialize
+Note : select only web,security dependency
 
 Create Home Controller.java
 
@@ -30,54 +29,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Controller
-public class HomeController {
-	
-	@GetMapping("/")
-	String index(@RequestParam(value="name", required=false, defaultValue="shamim") 
-	String name, Model model) {
-        model.addAttribute("name", name);
-		return "index";
-	}
+@RestController
+public class HelloWorldResource {
+
+    @RequestMapping("/")
+    public String geHelloWorld(){
+        return "Hello world ";
+    }
 }
 
 ```
 
-Add @EnableWebSecurity annotation at SpringSecurityApplication.java
 
-```java
-package com.javaaround.security;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
-@SpringBootApplication
-@EnableWebSecurity
-public class SpringSecurityApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(SpringSecurityApplication.class, args);
-	}
-}
-
-```
-Create index.html
-
-```html
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head>
-<body>
-    <p th:text="'Hello, ' + ${name} + '!'" />
-</body>
-</html>
-```
-
-Thats it . Your application is secure without writing any code
+Thats it . Your application is secure without writing any code!
 
 browse your app
 
@@ -85,12 +49,78 @@ browse your app
 
 it needs username / password to access content
 
-By default spring provide 
+By default spring provide single user with following credential
 
 `username : user` <br>
 `password: show at console`
 
 By above credential you can access your app
+
+We can override above default credential by setting following property
+`spring.security.user.name=admin
+ spring.security.user.password=124`
+ 
+Rerun app<br/>
+then we can access page by our credential 
+
+## Setting multiple user ##
+We know any application does not only single user. we  have multiple user to access app .User can have many place
+1. In memory
+2. at database
+3. at LDAP Server
+4. at Oauth environment
+
+## In memory authentication ###
+Create a SecurityConfiguration.java <br />
+
+```
+@Configuration
+@EnableWebSecurity
+public class SecurityConfiguration  extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("user").password("user").authorities("ROLE_USER").and()
+                .withUser("admin").password("admin").authorities("ROLE_ADMIN");
+    }
+
+}
+
+```
+
+1. `@EnableWebSecurity` is marker annotation is used to mark the spring mvc to use our security configuration instead of build in security configuration. if this annotation
+is missing then it will use built in security configuration
+2. class must extends `WebSecurityConfigurerAdapter` . Since we need Authentication(In memory) of our application . so we need override following method
+`protected void configure(AuthenticationManagerBuilder auth) throws Exception`
+3. Then we add two user with authority(discuss later)
+
+Rerun app
+Try login but can't success. we see following line at console
+
+`java.lang.IllegalArgumentException: There is no PasswordEncoder mapped for the id "null"`
+
+That means password must be hash at current spring security but our case it is plain text <br />
+
+add a encode and encode your password by following Setting
+
+```
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .passwordEncoder(passwordEncoder())
+                .withUser("user").password(passwordEncoder().encode("user")).authorities("ROLE_USER").and()
+                .withUser("admin").password(passwordEncoder().encode("admin")).authorities("ROLE_ADMIN");
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+```
+
+Note : if you still need plain text password you can use
+`.passwordEncoder(NoOpPasswordEncoder.getInstance())` or `.withUser("user").password("{noop}user").authorities("ROLE_USER")`
+
 
 https://data-flair.training/blogs/spring-security-tutorial/
 https://spring.io/guides/topicals/spring-security-architecture/
