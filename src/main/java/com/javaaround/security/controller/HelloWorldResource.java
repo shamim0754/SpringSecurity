@@ -10,4 +10,9 @@ public class HelloWorldResource {
 	public String geHelloWorld(){
 		return "Hello world ";
 	}
+
+	@RequestMapping("/admin")
+	public String geAdminHelloWorld(){
+		return "Admin Hello world ";
+	}
 }
